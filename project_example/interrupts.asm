@@ -1,4 +1,9 @@
 INT1_set_intr_falling_edge:
+    push r16
+    push r17
+    push r30
+    push r31
+
     load [r31:r30, EICRA]
     ld r16, Z
     ldi r17, 0b00000011
@@ -9,9 +14,19 @@ INT1_set_intr_falling_edge:
 
     sbi EIMSK, 1 ; unmask INT1
 
+    pop r31
+    pop r30
+    pop r17
+    pop r16
+
     ret
 
 INT0_set_intr_falling_edge:
+    push r16
+    push r17
+    push r30
+    push r31
+    
     load [r31:r30, EICRA]
     ld r16, Z
     ldi r17, 0b00001100
@@ -20,5 +35,10 @@ INT0_set_intr_falling_edge:
     or r16, r17 ; r16 now contains the original bits for INT1 and the new ones for INT0
 
     sbi EIMSK, 0 ; unmask INT0
+
+    pop r31
+    pop r30
+    pop r17
+    pop r16
 
     ret
