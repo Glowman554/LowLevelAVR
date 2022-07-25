@@ -61,7 +61,7 @@
 .include "helper.asm"
 .include "usart.asm"
 .include "eeprom.asm"
-
+.include "interrupts.asm"
 TIM1_OVF:
     push r16
     push r30
@@ -69,10 +69,10 @@ TIM1_OVF:
 
     in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
 
-    ;in r30, PORTB
-    ;ldi r31, 0b00100000
-    ;eor r30, r31
-    ;out PORTB, r30 ; flip PB5
+    in r30, PORTB
+    ldi r31, 0b00100000
+    eor r30, r31
+    out PORTB, r30 ; flip PB5
 
     memsave [TCNT1H, TCNT1L, TCNT_O]
 
@@ -83,15 +83,14 @@ TIM1_OVF:
     reti ; return from interrupt
 
 EXT_INT1:
+    push r16
     push r30
     push r31
 
     in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
 
-    in r30, PORTB
-    ldi r31, 0b00100000
-    eor r30, r31
-    out PORTB, r30 ; flip PB5
+    load [r31:r30, 2 * int1_str]
+    call USART0_transmit_str
 
     out SREG, r16 ; restore sreg
     pop r31
@@ -114,8 +113,10 @@ loop_intrnl:
 setup:
     sbi DDRB, LED_B ; set PB5 output
 
-	cbi DDRD, 3 ; set PD3 input (INT1)
-	sbi PORTD, 3 ; enable pull-up resistor on PD3
+    ldi r16, 0b00000000
+    out DDRD, r16
+    ldi r16, 0b11111111
+    out PORTD, r16
 
     call USART0_init
 
@@ -133,22 +134,18 @@ setup:
     load [r31:r30, TIMSK1]
     st Z, r16 ; unmask timer overflow interrupt 1
 
-	ldi r16, 0b00001000 ; INT1 as falling edge
-	load [r31:r30, EICRA]
-	st Z, r16
-
-	ldi r16, 0b00000010 ; unmask INT0
-	out EIMSK, r16
-
+    call INT1_set_intr_falling_edge
+    call INT0_set_intr_falling_edge
+    
     sei
 
     ret ; return
     
 loop:
-    ldi r30, low(2 * hello)
-    ldi r31, high(2 * hello)
-    call USART0_transmit_str
+    ; ldi r30, low(2 * hello)
+    ; ldi r31, high(2 * hello)
+    ; call USART0_transmit_str
     
     ret ; return
-
-hello: .db "Hello World!", 10, 13, 0
+    
+int1_str: .db "INT1", 10, 13, 0
