@@ -7,7 +7,7 @@
 .org 0x0000 ; Execution starts here
     jmp main
 .org 0x0002
-    reti ; jmp EXT_INT0 ; IRQ0 Handler
+    jmp EXT_INT0 ; IRQ0 Handler
 .org 0x0004
     jmp EXT_INT1 ; IRQ1 Handler
 .org 0x0006
@@ -70,11 +70,27 @@ TIM1_OVF:
     in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
 
     in r30, PORTB
-    ldi r31, 0b00100000
+    ldi r31, 0b00110000
     eor r30, r31
     out PORTB, r30 ; flip PB5
 
     memsave [TCNT1H, TCNT1L, TCNT_O]
+
+    out SREG, r16 ; restore sreg
+    pop r31
+    pop r30
+    pop r16
+    reti ; return from interrupt
+
+EXT_INT0:
+    push r16
+    push r30
+    push r31
+
+    in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
+
+    load [r31:r30, 2 * int0_str]
+    call USART0_transmit_str
 
     out SREG, r16 ; restore sreg
     pop r31
@@ -112,6 +128,7 @@ loop_intrnl:
 
 setup:
     sbi DDRB, LED_B ; set PB5 output
+    sbi DDRB, 4 ; set PB4 output
 
     ldi r16, 0b00000000
     out DDRD, r16
@@ -135,7 +152,7 @@ setup:
     st Z, r16 ; unmask timer overflow interrupt 1
 
     call INT1_set_intr_falling_edge
-    ; call INT0_set_intr_falling_edge
+    call INT0_set_intr_rising_edge
     
     sei
 
@@ -152,4 +169,5 @@ loop:
     call enter_sleep_mode
     ret ; return
     
+int0_str: .db "INT0", 10, 13, 0
 int1_str: .db "INT1", 10, 13, 0
