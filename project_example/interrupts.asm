@@ -109,3 +109,15 @@ enter_sleep_mode:
     pop r16
 
     ret
+
+.macro isr_begin
+    pusha
+    in r16, SREG
+    push r16
+.endm
+
+.macro isr_end
+    pop r16
+    out SREG, r16
+    popa
+.endm

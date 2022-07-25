@@ -63,11 +63,7 @@
 .include "eeprom.asm"
 .include "interrupts.asm"
 TIM1_OVF:
-    push r16
-    push r30
-    push r31
-
-    in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
+    isr_begin
 
     in r30, PORTB
     ldi r31, 0b00110000
@@ -76,42 +72,25 @@ TIM1_OVF:
 
     memsave [TCNT1H, TCNT1L, TCNT_O]
 
-    out SREG, r16 ; restore sreg
-    pop r31
-    pop r30
-    pop r16
+    isr_end
     reti ; return from interrupt
 
 EXT_INT0:
-    push r16
-    push r30
-    push r31
-
-    in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
+    isr_begin
 
     load [r31:r30, 2 * int0_str]
     call USART0_transmit_str
 
-    out SREG, r16 ; restore sreg
-    pop r31
-    pop r30
-    pop r16
+    isr_end
     reti ; return from interrupt
 
 EXT_INT1:
-    push r16
-    push r30
-    push r31
-
-    in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
+    isr_begin
 
     load [r31:r30, 2 * int1_str]
     call USART0_transmit_str
 
-    out SREG, r16 ; restore sreg
-    pop r31
-    pop r30
-    pop r16
+    isr_end
     reti ; return from interrupt
 
 main:
