@@ -42,3 +42,23 @@ INT0_set_intr_falling_edge:
     pop r16
 
     ret
+
+; enter sleep mode stored in r16 (SE bit gets set automatically)
+enter_sleep_mode:
+    push r16
+    push r17
+
+    ldi r17, 0b00000001
+    or r16, r17
+
+    out SMCR, r16
+
+    sleep
+
+    ldi r16, 0b00000000
+    out SMCR, r16
+
+    pop r17
+    pop r16
+
+    ret

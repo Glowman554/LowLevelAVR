@@ -135,9 +135,12 @@ setup:
     st Z, r16 ; unmask timer overflow interrupt 1
 
     call INT1_set_intr_falling_edge
-    call INT0_set_intr_falling_edge
+    ; call INT0_set_intr_falling_edge
     
     sei
+
+    ; ldi r16, SP_PWD ; only can wake up from INT0 or INT1
+    ; call enter_sleep_mode
 
     ret ; return
     
@@ -145,7 +148,8 @@ loop:
     ; ldi r30, low(2 * hello)
     ; ldi r31, high(2 * hello)
     ; call USART0_transmit_str
-    
+    ldi r16, SP_IDL
+    call enter_sleep_mode
     ret ; return
     
 int1_str: .db "INT1", 10, 13, 0

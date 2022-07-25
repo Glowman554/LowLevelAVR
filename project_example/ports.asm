@@ -29,6 +29,11 @@
 
 .equ SMCR   = 0x33
 
+.equ SP_IDL = 0b00000000
+.equ SP_ADC = 0b00000010
+.equ SP_PWD = 0b00000100
+.equ SP_PWS = 0b00000110
+
 .equ UBRR0H = 0xc5
 .equ UBRR0L = 0xc4
 
