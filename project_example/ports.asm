@@ -1,6 +1,11 @@
 .equ PORTB  = 0x05
 .equ DDRB   = 0x04
 
+
+.equ PORTD = 0x0b
+.equ DDRD  = 0x0a
+.equ PIND  = 0x09
+
 .equ LED_B  = 5
 
 .equ RAMEND =  0x8ff
@@ -32,3 +37,6 @@
 .equ UCSR0C = 0xc2
 
 .equ UDR0   = 0xc6
+
+.equ EICRA  = 0x69
+.equ EIMSK  = 0x1d

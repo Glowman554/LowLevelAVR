@@ -9,7 +9,7 @@
 .org 0x0002
     reti ; jmp EXT_INT0 ; IRQ0 Handler
 .org 0x0004
-    reti ; jmp EXT_INT1 ; IRQ1 Handler
+    jmp EXT_INT1 ; IRQ1 Handler
 .org 0x0006
     reti ; jmp PCINT0 ; PCINT0 Handler
 .org 0x0008
@@ -69,12 +69,29 @@ TIM1_OVF:
 
     in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
 
+    ;in r30, PORTB
+    ;ldi r31, 0b00100000
+    ;eor r30, r31
+    ;out PORTB, r30 ; flip PB5
+
+    memsave [TCNT1H, TCNT1L, TCNT_O]
+
+    out SREG, r16 ; restore sreg
+    pop r31
+    pop r30
+    pop r16
+    reti ; return from interrupt
+
+EXT_INT1:
+    push r30
+    push r31
+
+    in r16, SREG ; save SREG since it can happen that we interrupt the cpu at a point where the vaule in SREG is still needed
+
     in r30, PORTB
     ldi r31, 0b00100000
     eor r30, r31
     out PORTB, r30 ; flip PB5
-
-    memsave [TCNT1H, TCNT1L, TCNT_O]
 
     out SREG, r16 ; restore sreg
     pop r31
@@ -97,6 +114,9 @@ loop_intrnl:
 setup:
     sbi DDRB, LED_B ; set PB5 output
 
+	cbi DDRD, 3 ; set PD3 input (INT1)
+	sbi PORTD, 3 ; enable pull-up resistor on PD3
+
     call USART0_init
 
     memsave [TCNT1H, TCNT1L, TCNT_O]
@@ -112,6 +132,13 @@ setup:
     ldi r16, 0b00000001
     load [r31:r30, TIMSK1]
     st Z, r16 ; unmask timer overflow interrupt 1
+
+	ldi r16, 0b00001000 ; INT1 as falling edge
+	load [r31:r30, EICRA]
+	st Z, r16
+
+	ldi r16, 0b00000010 ; unmask INT0
+	out EIMSK, r16
 
     sei
 
