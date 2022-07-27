@@ -62,6 +62,8 @@
 .include "usart.asm"
 .include "eeprom.asm"
 .include "interrupts.asm"
+.include "pwm.asm"
+
 TIM1_OVF:
     isr_begin
 
@@ -108,6 +110,7 @@ loop_intrnl:
 setup:
     sbi DDRB, LED_B ; set PB5 output
     sbi DDRB, 4 ; set PB4 output
+    sbi DDRB, 3 ; set PB3 output
 
     ldi r16, 0b00000000
     out DDRD, r16
@@ -132,7 +135,10 @@ setup:
 
     call INT1_set_intr_falling_edge
     call INT0_set_intr_rising_edge
-    
+
+    ldi r22, 5
+    call set_pb3_pwm
+
     sei
 
     ; ldi r16, SP_PWD ; only can wake up from INT0 or INT1

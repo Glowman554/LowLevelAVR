@@ -23,6 +23,12 @@
 .equ TCCR1A = 0x80
 .equ TCCR1B = 0x81
 
+.equ TCCR2A = 0xb0
+.equ TCCR2B = 0xB1
+
+.equ OCR2B  = 0xb4
+.equ OCR2A  = 0xb3
+
 .equ TIMSK1 = 0x6f
 
 .equ SREG   = 0x3f
