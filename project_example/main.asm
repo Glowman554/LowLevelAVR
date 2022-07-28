@@ -63,6 +63,7 @@
 .include "eeprom.asm"
 .include "interrupts.asm"
 .include "pwm.asm"
+.include "timer1.asm"
 
 TIM1_OVF:
     isr_begin
@@ -72,7 +73,7 @@ TIM1_OVF:
     eor r30, r31
     out PORTB, r30 ; flip PB5
 
-    memsave [TCNT1H, TCNT1L, TCNT_O]
+    timer1_cnt [TCNT_O]
 
     isr_end
     reti ; return from interrupt
@@ -119,19 +120,10 @@ setup:
 
     call USART0_init
 
-    memsave [TCNT1H, TCNT1L, TCNT_O]
-
-    ldi r16, 0b00000101
-    load [r31:r30, TCCR1B]
-    st Z, r16 ; set preescaler to 1024
-
-    ldi r16, 0
-    load [r31:r30, TCCR1A]
-    st Z, r16 ; disable all timer features with makes it a overflow timer
-    
-    ldi r16, 0b00000001
-    load [r31:r30, TIMSK1]
-    st Z, r16 ; unmask timer overflow interrupt 1
+    timer1_cnt [TCNT_O]
+    call timer1_set_prescaler_1024
+    call timer1_to_ovf
+    call timer1_unmask_ovf
 
     call INT1_set_intr_falling_edge
     call INT0_set_intr_rising_edge
