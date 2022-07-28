@@ -2,7 +2,8 @@
 
 .equ BAUD   = 9600
 .equ F_CPU  = 16000000
-.equ TCNT_O = 49910
+
+.equ TCNT_O = 65535 - (F_CPU / 1024)
 
 .org 0x0000 ; Execution starts here
     jmp main
